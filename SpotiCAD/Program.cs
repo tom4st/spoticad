@@ -58,9 +58,13 @@ namespace SpotiCAD
         //Constructor
         public SpotiCAD()
         {
+            //Get Spotify Process ID
             this.SpotifyHandle = getProcess();
+            //Grab the right sub-process, the one with the title
             ThreadInfo thread = threadInfo((int)SpotifyHandle);
+            //Spit out the Window Title
             Console.WriteLine(thread.title);
+            //Keep the Console open
             Console.ReadLine();
         }
 
