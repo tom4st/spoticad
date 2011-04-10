@@ -43,10 +43,10 @@ namespace SpotiCAD
         public delegate bool CallBackPtr(IntPtr hwnd, ref ThreadInfo threadInfo);
         private IntPtr SpotifyHandle;
 
-        [DllImport("user32")]
+        [DllImport("user32", EntryPoint = "GetWindowThreadProcessID", CharSet = CharSet.Ansi)]
         private static extern UInt32 GetWindowThreadProcessId(Int32 hWnd, out Int32 lpdwProcessId);
 
-        [DllImport("user32", CharSet = CharSet.Auto, SetLastError = true)]
+        [DllImport("user32", EntryPoint = "EnumWindows", CharSet = CharSet.Ansi)]
         public static extern int EnumWindows(CallBackPtr callPtr, ref ThreadInfo threadInfo);
 
         [DllImport("user32.dll", EntryPoint = "GetWindowText", CharSet = CharSet.Ansi)]
