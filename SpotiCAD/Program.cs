@@ -69,7 +69,7 @@ namespace SpotiCAD
             //Get Process ID from the windowHandler
             int pid = 0;
             GetWindowThreadProcessId(hwnd.ToInt32(), out pid);
-            //Check if the process is part of the process: spotify
+            //Check if the process is a sub-process of the process: spotify
             if (pid == (int)threadInfo.spID)
             {
                 //Check if the process' title contains the word Spotify (Caps Sensitive)
