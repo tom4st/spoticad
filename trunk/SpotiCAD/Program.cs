@@ -4,8 +4,21 @@ using System.Diagnostics;
 using System.Text;
 
 /*
- * This is NON-FUNCTIONING code.
- * The only way to exit is to kill the process.
+    SpotiCAD - Interfaces Spotify to CD Art Display
+    Copyright (C) 2011  KodessR <kodessr@gmail.com>
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
  * */
 namespace SpotiCAD
 {
@@ -24,10 +37,10 @@ namespace SpotiCAD
         private String wTitle;
 
         [DllImport("user32.dll", EntryPoint = "GetWindowText", CharSet = CharSet.Ansi)]
-        public static extern bool GetWindowText(IntPtr hWnd, [OutAttribute()] StringBuilder strNewWindowName, Int32 maxCharCount);
+        private static extern bool GetWindowText(IntPtr hWnd, [OutAttribute()] StringBuilder strNewWindowName, Int32 maxCharCount);
 
         [DllImport("user32.dll", EntryPoint = "GetWindowTextLength", CharSet = CharSet.Ansi)]
-        static extern int GetWindowTextLength(IntPtr hWnd);
+        private static extern int GetWindowTextLength(IntPtr hWnd);
 
         //Constructor
         public SpotiCAD()
@@ -40,7 +53,7 @@ namespace SpotiCAD
         }
 
         //Get the Handle from the Process
-        private void getHandle()
+        private IntPtr getHandle()
         {
             Process[] sProcessArr = Process.GetProcessesByName("spotify");
             //Check if the Spotify Process is running
@@ -48,17 +61,19 @@ namespace SpotiCAD
             {
                 Process sProcess = sProcessArr[0];
                 //Dump the Handle
-                this.SpotifyHandle = sProcess.MainWindowHandle;
+                return sProcess.MainWindowHandle;
             }
+            //Reaching this means Spotify isn't running.
+            return IntPtr.Zero;
         }
 
         //Get the title of the spotify window and store it.
-        private void getWindowTitle()
+        private String getWindowTitle()
         {
             int length = GetWindowTextLength(SpotifyHandle);
             StringBuilder sb = new StringBuilder(length + 1);
             GetWindowText(SpotifyHandle, sb, sb.Capacity);
-            wTitle = sb.ToString();
+            return sb.ToString();
         }
 
         //We grab the title of the spotify window and strip out the track name.
