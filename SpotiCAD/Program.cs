@@ -2,6 +2,7 @@
 using System.Runtime.InteropServices;
 using System.Diagnostics;
 using System.Text;
+using System.Threading;
 
 /*
     SpotiCAD - Interfaces Spotify to CD Art Display
@@ -32,9 +33,21 @@ namespace SpotiCAD
 
     class SpotiCAD
     {
-
+        //TODO: Needs to be renamed
+        public class ThreadInfo
+        {
+            public string title;
+            public IntPtr hWnd;
+            public IntPtr spID;
+        }
+        public delegate bool CallBackPtr(IntPtr hwnd, ref ThreadInfo threadInfo);
         private IntPtr SpotifyHandle;
-        private String wTitle;
+
+        [DllImport("user32")]
+        private static extern UInt32 GetWindowThreadProcessId(Int32 hWnd, out Int32 lpdwProcessId);
+
+        [DllImport("user32", CharSet = CharSet.Auto, SetLastError = true)]
+        public static extern int EnumWindows(CallBackPtr callPtr, ref ThreadInfo threadInfo);
 
         [DllImport("user32.dll", EntryPoint = "GetWindowText", CharSet = CharSet.Ansi)]
         private static extern bool GetWindowText(IntPtr hWnd, [OutAttribute()] StringBuilder strNewWindowName, Int32 maxCharCount);
@@ -45,15 +58,52 @@ namespace SpotiCAD
         //Constructor
         public SpotiCAD()
         {
-            this.SpotifyHandle = IntPtr.Zero;
-            //Start our inf loop
-            while (true)
-            {
-            }
+            this.SpotifyHandle = getProcess();
+            ThreadInfo thread = threadInfo((int)SpotifyHandle);
+            Console.WriteLine(thread.title);
+            Console.ReadLine();
         }
 
-        //Get the Handle from the Process
-        private IntPtr getHandle()
+        public static bool processCheck(IntPtr hwnd, ref ThreadInfo threadInfo)
+        {
+            //Get Process ID from the windowHandler
+            int pid = 0;
+            GetWindowThreadProcessId(hwnd.ToInt32(), out pid);
+            //Check if the process is part of the process: spotify
+            if (pid == (int)threadInfo.spID)
+            {
+                //Check if the process' title contains the word Spotify (Caps Sensitive)
+                if (getWindowTitle(hwnd).Contains("Spotify"))
+                {
+                    //Throw the info into the threadInfo object
+                    threadInfo.hWnd = hwnd;
+                    threadInfo.title = getWindowTitle(hwnd);
+                    //Break out of our loop searching all processes
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        //TODO: Needs to be renamed
+        public ThreadInfo threadInfo(int pid)
+        {
+            ThreadInfo threadInfo = new ThreadInfo();
+            //Put the spotify process ID into the threadInfo so Report method can use it.
+            threadInfo.spID = SpotifyHandle;
+            EnumWindows(new CallBackPtr(processCheck), ref threadInfo);
+            //Process have been checked.
+            if (threadInfo.hWnd == IntPtr.Zero)
+            {
+                //Couldn't find a thread with the correct title
+                return null;
+            }
+            //We found it, pass through our dataobject
+            return threadInfo;
+        }
+
+        //Get Spotify's ProcessID
+        private IntPtr getProcess()
         {
             Process[] sProcessArr = Process.GetProcessesByName("spotify");
             //Check if the Spotify Process is running
@@ -61,18 +111,20 @@ namespace SpotiCAD
             {
                 Process sProcess = sProcessArr[0];
                 //Dump the Handle
-                return sProcess.MainWindowHandle;
+                return (IntPtr)sProcess.Id;
             }
-            //Reaching this means Spotify isn't running.
+            //Reaching this means the Spotify Process could not be found
             return IntPtr.Zero;
         }
 
         //Get the title of the spotify window and store it.
-        private String getWindowTitle()
+        private static String getWindowTitle(IntPtr hWnd)
         {
-            int length = GetWindowTextLength(SpotifyHandle);
+            //StringBuilder sb = new StringBuilder(256);
+            //GetWindowText(SpotifyHandle, sb, 256);
+            int length = GetWindowTextLength(hWnd);
             StringBuilder sb = new StringBuilder(length + 1);
-            GetWindowText(SpotifyHandle, sb, sb.Capacity);
+            GetWindowText(hWnd, sb, sb.Capacity);
             return sb.ToString();
         }
 
