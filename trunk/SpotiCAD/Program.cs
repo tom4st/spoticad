@@ -43,7 +43,7 @@ namespace SpotiCAD
         public delegate bool CallBackPtr(IntPtr hwnd, ref ThreadInfo threadInfo);
         private IntPtr SpotifyHandle;
 
-        [DllImport("user32", EntryPoint = "GetWindowThreadProcessID", CharSet = CharSet.Ansi)]
+        [DllImport("user32.dll", EntryPoint = "GetWindowThreadProcessId", CharSet = CharSet.Ansi)]
         private static extern UInt32 GetWindowThreadProcessId(Int32 hWnd, out Int32 lpdwProcessId);
 
         [DllImport("user32", EntryPoint = "EnumWindows", CharSet = CharSet.Ansi)]
@@ -63,7 +63,11 @@ namespace SpotiCAD
             //Grab the right sub-process, the one with the title
             ThreadInfo thread = threadInfo((int)SpotifyHandle);
             //Spit out the Window Title
-            Console.WriteLine(thread.title);
+            string[] words = thread.title.Split('–');
+            foreach (string word in words)
+            {
+                Console.WriteLine(word.Trim());
+            }
             //Keep the Console open
             Console.ReadLine();
         }
@@ -133,13 +137,13 @@ namespace SpotiCAD
         }
 
         //We grab the title of the spotify window and strip out the track name.
-        private void getTrack()
+        private void catchTrack()
         {
 
         }
 
         //We grab the title of the spotify window and strip out the artist name.
-        private void getArtist()
+        private void catchArtist()
         {
 
         }
