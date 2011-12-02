@@ -69,6 +69,8 @@ namespace SpotiCAD
                 Console.WriteLine(word.Trim());
             }
             //Keep the Console open
+            // Use the Spotify API to search for the song:
+            // eg: http://ws.spotify.com/search/1/track?q=may%20it%20be%20artist:enya
             Console.ReadLine();
         }
 
